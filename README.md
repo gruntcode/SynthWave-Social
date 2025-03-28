@@ -2,6 +2,8 @@
 
 A lightweight social media platform with a synthwave theme and modern dark mode UI.
 
+![SynthWave Social Preview](docs/images/synthwave-social-preview.jpg)
+
 ## Features
 
 - User registration and login system
