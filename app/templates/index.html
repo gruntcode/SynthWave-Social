@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Main Content -->
+{% include 'components/create_post.html' %}
+
+<div id="posts-container">
+    {% for post in posts %}
+    <div class="card post-card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="{{ url_for('static', filename=post.author.profile_image) }}" alt="{{ post.author.username }}" class="avatar-small me-2">
+                    <div>
+                        <a href="{{ url_for('main.user', username=post.author.username) }}" class="fw-bold text-decoration-none">{{ post.author.username }}</a>
+                        <div class="text-muted small">{{ post.timestamp.strftime('%B %d, %Y at %H:%M') }}</div>
+                    </div>
+                </div>
+                {% if post.author.id == current_user.id %}
+                <div class="dropdown">
+                    <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <form action="{{ url_for('posts.delete_post', id=post.id) }}" method="post" class="delete-post-form">
+                                <button type="submit" class="dropdown-item text-danger">Delete</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="card-text">{{ post.body }}</p>
+            {% if post.media_path %}
+            <div class="post-media">
+                {% if post.media_type == 'image' %}
+                <img src="{{ url_for('static', filename=post.media_path) }}" alt="Post image" class="img-fluid rounded">
+                {% elif post.media_type == 'video' %}
+                <video controls class="img-fluid rounded">
+                    <source src="{{ url_for('static', filename=post.media_path) }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% elif post.media_type == 'audio' %}
+                <audio controls class="w-100">
+                    <source src="{{ url_for('static', filename=post.media_path) }}" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                {% else %}
+                <div class="file-attachment">
+                    <i class="fas fa-file me-2"></i>
+                    <a href="{{ url_for('static', filename=post.media_path) }}" target="_blank">
+                        Attached File
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <button class="btn btn-sm btn-outline-primary like-button me-2 {% if current_user in post.liked_by.all() %}liked{% endif %}" data-post-id="{{ post.id }}">
+                        <i class="{% if current_user in post.liked_by.all() %}fas{% else %}far{% endif %} fa-heart"></i>
+                        <span class="like-count">{{ post.liked_by.count() }}</span>
+                    </button>
+                    <a href="{{ url_for('posts.view_post', id=post.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="far fa-comment me-1"></i>
+                        <span class="comment-count">{{ post.comments.count() }}</span>
+                    </a>
+                </div>
+                <div>
+                    <span class="text-muted small">
+                        <i class="far fa-clock me-1"></i>
+                        {{ post.timestamp.strftime('%H:%M') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not posts %}
+    <div class="card">
+        <div class="card-body text-center">
+            <p class="mb-0">No posts yet. Be the first to post something!</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="pagination-container text-center">
+        {% if prev_url %}
+        <a href="{{ prev_url }}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-chevron-left me-1"></i> Newer posts
+        </a>
+        {% endif %}
+        {% if next_url %}
+        <a href="{{ next_url }}" class="btn btn-outline-primary">
+            Older posts <i class="fas fa-chevron-right ms-1"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Initialize music player functionality for sidebar
+        const musicItems = document.querySelectorAll('.music-item');
+        musicItems.forEach(item => {
+            const playBtn = item.querySelector('.play-btn');
+            if (playBtn) {
+                playBtn.addEventListener('click', function() {
+                    const src = item.dataset.src;
+                    const title = item.dataset.title;
+                    const artist = item.dataset.artist;
+                    
+                    // Update mini player
+                    if (window.updateMiniPlayer) {
+                        window.updateMiniPlayer(src, title, artist);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

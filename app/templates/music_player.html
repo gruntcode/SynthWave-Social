@@ -1,0 +1,854 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .music-player-container {
+        background: rgba(30, 30, 40, 0.7);
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(255, 0, 204, 0.3);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 0, 204, 0.2);
+    }
+    
+    .music-cover {
+        width: 250px;
+        height: 250px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 0 auto 2rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(45deg, #ff00cc, #3333ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .music-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .music-info {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .music-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #fff;
+    }
+    
+    .music-artist {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .progress-container {
+        height: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        border-radius: 5px;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+    
+    .time-container {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 1.5rem;
+    }
+    
+    .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .control-btn {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1.2rem;
+        margin: 0 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .control-btn:hover {
+        color: #ff00cc;
+        transform: scale(1.1);
+    }
+    
+    .control-btn.play-pause {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #ff00cc, #3333ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 5px 15px rgba(255, 0, 204, 0.4);
+    }
+    
+    .control-btn.play-pause:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(255, 0, 204, 0.6);
+        color: #fff;
+    }
+    
+    .volume-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    
+    .volume-btn {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        cursor: pointer;
+    }
+    
+    .volume-slider {
+        flex: 1;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .volume-percentage {
+        height: 100%;
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        border-radius: 5px;
+        width: 80%;
+    }
+    
+    .playlist {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 2rem;
+        padding-right: 10px;
+    }
+    
+    .playlist::-webkit-scrollbar {
+        width: 5px;
+    }
+    
+    .playlist::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+    
+    .playlist::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #ff00cc 0%, #3333ff 100%);
+        border-radius: 5px;
+    }
+    
+    .playlist-item {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+    }
+    
+    .playlist-item:hover, .playlist-item.active {
+        background: rgba(255, 0, 204, 0.2);
+    }
+    
+    .playlist-item .play-indicator {
+        margin-right: 1rem;
+        font-size: 0.8rem;
+        color: #ff00cc;
+        opacity: 0;
+    }
+    
+    .playlist-item.active .play-indicator {
+        opacity: 1;
+    }
+    
+    .playlist-item-info {
+        flex: 1;
+    }
+    
+    .playlist-item-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .playlist-item-artist {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .upload-btn {
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 30px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(255, 0, 204, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .upload-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(255, 0, 204, 0.6);
+    }
+    
+    .upload-btn i {
+        margin-right: 0.5rem;
+    }
+    
+    .upload-modal .modal-content {
+        background: rgba(30, 30, 40, 0.95);
+        border: 1px solid rgba(255, 0, 204, 0.2);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .upload-modal .modal-header {
+        border-bottom: 1px solid rgba(255, 0, 204, 0.2);
+    }
+    
+    .upload-modal .modal-footer {
+        border-top: 1px solid rgba(255, 0, 204, 0.2);
+    }
+    
+    .upload-modal .btn-close {
+        color: #fff;
+        filter: invert(1) brightness(200%);
+    }
+    
+    /* YouTube player styles */
+    .youtube-player-container {
+        display: none;
+        margin-top: 1.5rem;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .youtube-player-container.active {
+        display: block;
+    }
+    
+    .youtube-player-iframe {
+        width: 100%;
+        height: 225px;
+        border: none;
+    }
+    
+    .youtube-controls {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .youtube-btn {
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        margin: 0 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    
+    .youtube-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 0, 204, 0.4);
+    }
+    
+    .youtube-btn.youtube-toggle {
+        background: linear-gradient(90deg, #ff6b00 0%, #ff00cc 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content_full %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="music-player-container">
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="music-cover">
+                        <img src="{{ url_for('static', filename='img/default_album.png') }}" alt="Album Art" id="albumArt">
+                    </div>
+                    
+                    <div class="music-info">
+                        <div class="music-title" id="musicTitle">Select a track</div>
+                        <div class="music-artist" id="musicArtist">-</div>
+                    </div>
+                    
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    
+                    <div class="time-container">
+                        <div id="currentTime">0:00</div>
+                        <div id="totalTime">0:00</div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="control-btn" id="prevBtn">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="control-btn play-pause" id="playPauseBtn">
+                            <i class="fas fa-play" id="playPauseIcon"></i>
+                        </button>
+                        <button class="control-btn" id="nextBtn">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="volume-container">
+                        <button class="volume-btn" id="volumeBtn">
+                            <i class="fas fa-volume-up" id="volumeIcon"></i>
+                        </button>
+                        <div class="volume-slider" id="volumeSlider">
+                            <div class="volume-percentage" id="volumePercentage"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <button class="upload-btn" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="fas fa-upload me-2"></i>Upload Music
+                        </button>
+                        <button class="upload-btn youtube-toggle" data-bs-toggle="modal" data-bs-target="#youtubeModal">
+                            <i class="fab fa-youtube me-2"></i>Add YouTube Playlist
+                        </button>
+                    </div>
+                    
+                    <div class="youtube-player-container" id="youtubePlayerContainer">
+                        <div id="youtubePlayer"></div>
+                        <div class="youtube-controls mt-3">
+                            <button class="youtube-btn" id="hideYoutubeBtn">
+                                <i class="fas fa-eye-slash me-1"></i>Hide Player
+                            </button>
+                            <button class="youtube-btn" id="muteYoutubeBtn">
+                                <i class="fas fa-volume-mute me-1"></i>Mute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-7">
+                    <h4 class="mb-3">Playlist</h4>
+                    <div class="playlist" id="playlist">
+                        {% if music %}
+                        {% for track in music %}
+                        <div class="playlist-item" 
+                             data-src="{{ url_for('static', filename=track.file_path) }}"
+                             data-title="{{ track.title }}"
+                             data-artist="{{ track.artist }}">
+                            <div class="play-indicator">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                            <div class="playlist-item-info">
+                                <div class="playlist-item-title">{{ track.title }}</div>
+                                <div class="playlist-item-artist">{{ track.artist }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center py-4">
+                            <p>No music tracks available.</p>
+                            <p>Upload some music to get started!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade upload-modal" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">Upload Music</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadMusicForm">
+                    <div class="mb-3">
+                        <label for="musicFile" class="form-label">Music File (MP3, WAV, OGG)</label>
+                        <input type="file" class="form-control" id="musicFile" accept=".mp3,.wav,.ogg" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="uploadMusicTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="uploadMusicTitle" placeholder="Enter track title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="uploadMusicArtist" class="form-label">Artist</label>
+                        <input type="text" class="form-control" id="uploadMusicArtist" placeholder="Enter artist name" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uploadMusicBtn">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- YouTube Modal -->
+<div class="modal fade" id="youtubeModal" tabindex="-1" aria-labelledby="youtubeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="youtubeModalLabel">Add YouTube Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addYoutubeForm">
+                    <div class="mb-3">
+                        <label for="youtubeUrl" class="form-label">YouTube Playlist URL</label>
+                        <input type="text" class="form-control" id="youtubeUrl" placeholder="Enter YouTube playlist URL" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="addYoutubeBtn">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Audio element
+        const audio = new Audio();
+        let currentTrack = 0;
+        let isPlaying = false;
+        
+        // DOM elements
+        const albumArt = document.getElementById('albumArt');
+        const musicTitle = document.getElementById('musicTitle');
+        const musicArtist = document.getElementById('musicArtist');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const volumeBtn = document.getElementById('volumeBtn');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumePercentage = document.getElementById('volumePercentage');
+        const playlist = document.getElementById('playlist');
+        const uploadMusicBtn = document.getElementById('uploadMusicBtn');
+        const uploadMusicForm = document.getElementById('uploadMusicForm');
+        
+        // YouTube player variables
+        let player;
+        let youtubePlayerReady = false;
+        
+        // Load YouTube API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        
+        // YouTube API callback
+        window.onYouTubeIframeAPIReady = function() {
+            player = new YT.Player('youtubePlayer', {
+                height: '225',
+                width: '100%',
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 1,
+                    'autoplay': 0,
+                    'enablejsapi': 1,
+                    'modestbranding': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        };
+        
+        function onPlayerReady(event) {
+            youtubePlayerReady = true;
+            console.log('YouTube player ready');
+        }
+        
+        function onPlayerStateChange(event) {
+            // You can handle player state changes here
+        }
+        
+        // Handle YouTube playlist loading
+        const addYoutubeBtn = document.getElementById('addYoutubeBtn');
+        const youtubeUrlInput = document.getElementById('youtubeUrl');
+        const youtubePlayerContainer = document.getElementById('youtubePlayerContainer');
+        const hideYoutubeBtn = document.getElementById('hideYoutubeBtn');
+        const muteYoutubeBtn = document.getElementById('muteYoutubeBtn');
+        
+        addYoutubeBtn.addEventListener('click', function() {
+            const youtubeUrl = youtubeUrlInput.value.trim();
+            if (!youtubeUrl) return;
+            
+            // Extract playlist ID from URL
+            let playlistId = '';
+            
+            if (youtubeUrl.includes('list=')) {
+                playlistId = youtubeUrl.split('list=')[1];
+                if (playlistId.includes('&')) {
+                    playlistId = playlistId.split('&')[0];
+                }
+            } else if (youtubeUrl.includes('youtube.com/watch')) {
+                // Handle regular YouTube video URLs
+                const urlParams = new URLSearchParams(youtubeUrl.split('?')[1]);
+                const videoId = urlParams.get('v');
+                if (videoId) {
+                    // Load single video instead of playlist
+                    if (youtubePlayerReady) {
+                        player.loadVideoById(videoId);
+                        youtubePlayerContainer.classList.add('active');
+                        
+                        // Pause the audio player if it's playing
+                        if (!audio.paused) {
+                            audio.pause();
+                            playPauseIcon.classList.remove('fa-pause');
+                            playPauseIcon.classList.add('fa-play');
+                        }
+                        
+                        // Close the modal
+                        const youtubeModal = document.getElementById('youtubeModal');
+                        const modal = bootstrap.Modal.getInstance(youtubeModal);
+                        modal.hide();
+                    }
+                    return;
+                }
+            } else if (youtubeUrl.includes('youtu.be/')) {
+                // Handle single video URLs
+                const videoId = youtubeUrl.split('youtu.be/')[1];
+                if (videoId) {
+                    // Load single video instead of playlist
+                    if (youtubePlayerReady) {
+                        player.loadVideoById(videoId);
+                        youtubePlayerContainer.classList.add('active');
+                        
+                        // Pause the audio player if it's playing
+                        if (!audio.paused) {
+                            audio.pause();
+                            playPauseIcon.classList.remove('fa-pause');
+                            playPauseIcon.classList.add('fa-play');
+                        }
+                        
+                        // Close the modal
+                        const youtubeModal = document.getElementById('youtubeModal');
+                        const modal = bootstrap.Modal.getInstance(youtubeModal);
+                        modal.hide();
+                    }
+                    return;
+                }
+            }
+            
+            if (!playlistId) {
+                alert('Invalid YouTube playlist URL. Please enter a valid playlist URL.');
+                return;
+            }
+            
+            // Load the playlist
+            if (youtubePlayerReady) {
+                player.loadPlaylist({
+                    list: playlistId,
+                    listType: 'playlist',
+                    index: 0,
+                    startSeconds: 0
+                });
+                
+                // Show YouTube player container
+                youtubePlayerContainer.classList.add('active');
+                
+                // Pause the audio player if it's playing
+                if (!audio.paused) {
+                    audio.pause();
+                    playPauseIcon.classList.remove('fa-pause');
+                    playPauseIcon.classList.add('fa-play');
+                }
+                
+                // Close the modal
+                const youtubeModal = document.getElementById('youtubeModal');
+                const modal = bootstrap.Modal.getInstance(youtubeModal);
+                modal.hide();
+            } else {
+                alert('YouTube player is not ready yet. Please try again in a moment.');
+            }
+        });
+        
+        // Hide YouTube player
+        hideYoutubeBtn.addEventListener('click', function() {
+            youtubePlayerContainer.classList.remove('active');
+            if (player && youtubePlayerReady) {
+                player.pauseVideo();
+            }
+        });
+        
+        // Mute/unmute YouTube player
+        muteYoutubeBtn.addEventListener('click', function() {
+            if (player && youtubePlayerReady) {
+                if (player.isMuted()) {
+                    player.unMute();
+                    muteYoutubeBtn.innerHTML = '<i class="fas fa-volume-mute me-1"></i>Mute';
+                } else {
+                    player.mute();
+                    muteYoutubeBtn.innerHTML = '<i class="fas fa-volume-up me-1"></i>Unmute';
+                }
+            }
+        });
+        
+        // Event listeners
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        prevBtn.addEventListener('click', playPrevTrack);
+        nextBtn.addEventListener('click', playNextTrack);
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', playNextTrack);
+        progressContainer.addEventListener('click', setProgress);
+        volumeBtn.addEventListener('click', toggleMute);
+        volumeSlider.addEventListener('click', setVolume);
+        
+        // Add click event to playlist items
+        function initializePlaylistItems() {
+            const updatedPlaylistItems = document.querySelectorAll('.playlist-item');
+            updatedPlaylistItems.forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    currentTrack = index;
+                    loadTrack(currentTrack);
+                    playTrack();
+                });
+            });
+            return updatedPlaylistItems;
+        }
+        
+        // Initialize playlist items
+        let playlistItems = initializePlaylistItems();
+        
+        // Initialize playlist
+        if (playlistItems.length > 0) {
+            loadTrack(0);
+        }
+        
+        // Upload music
+        uploadMusicBtn.addEventListener('click', uploadMusic);
+        
+        // Functions
+        function loadTrack(index) {
+            if (playlistItems.length === 0) return;
+            
+            const track = playlistItems[index];
+            const trackSrc = track.dataset.src;
+            const trackTitle = track.dataset.title;
+            const trackArtist = track.dataset.artist;
+            
+            audio.src = trackSrc;
+            musicTitle.textContent = trackTitle;
+            musicArtist.textContent = trackArtist;
+            
+            // Update active track in playlist
+            playlistItems.forEach(item => item.classList.remove('active'));
+            track.classList.add('active');
+            
+            // Update mini player
+            if (window.updateMiniPlayer) {
+                window.updateMiniPlayer(trackSrc, trackTitle, trackArtist);
+            }
+        }
+        
+        function playTrack() {
+            audio.play();
+            isPlaying = true;
+            playPauseIcon.classList.remove('fa-play');
+            playPauseIcon.classList.add('fa-pause');
+        }
+        
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+        }
+        
+        function togglePlayPause() {
+            if (playlistItems.length === 0) return;
+            
+            if (isPlaying) {
+                pauseTrack();
+            } else {
+                playTrack();
+            }
+        }
+        
+        function playPrevTrack() {
+            if (playlistItems.length === 0) return;
+            
+            currentTrack--;
+            if (currentTrack < 0) {
+                currentTrack = playlistItems.length - 1;
+            }
+            
+            loadTrack(currentTrack);
+            playTrack();
+        }
+        
+        function playNextTrack() {
+            if (playlistItems.length === 0) return;
+            
+            currentTrack++;
+            if (currentTrack >= playlistItems.length) {
+                currentTrack = 0;
+            }
+            
+            loadTrack(currentTrack);
+            playTrack();
+        }
+        
+        function updateProgress() {
+            const { duration, currentTime } = audio;
+            if (isNaN(duration)) return;
+            
+            // Update progress bar
+            const progressPercent = (currentTime / duration) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+            
+            // Update time displays
+            currentTimeEl.textContent = formatTime(currentTime);
+            totalTimeEl.textContent = formatTime(duration);
+        }
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            
+            audio.currentTime = (clickX / width) * duration;
+        }
+        
+        function toggleMute() {
+            audio.muted = !audio.muted;
+            
+            if (audio.muted) {
+                volumeIcon.classList.remove('fa-volume-up');
+                volumeIcon.classList.add('fa-volume-mute');
+                volumePercentage.style.width = '0%';
+            } else {
+                volumeIcon.classList.remove('fa-volume-mute');
+                volumeIcon.classList.add('fa-volume-up');
+                volumePercentage.style.width = `${audio.volume * 100}%`;
+            }
+        }
+        
+        function setVolume(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const volume = clickX / width;
+            
+            audio.volume = volume;
+            volumePercentage.style.width = `${volume * 100}%`;
+            
+            // Update volume icon
+            if (volume === 0) {
+                volumeIcon.classList.remove('fa-volume-up');
+                volumeIcon.classList.add('fa-volume-mute');
+            } else {
+                volumeIcon.classList.remove('fa-volume-mute');
+                volumeIcon.classList.add('fa-volume-up');
+            }
+        }
+        
+        function uploadMusic() {
+            const fileInput = document.getElementById('musicFile');
+            const titleInput = document.getElementById('uploadMusicTitle');
+            const artistInput = document.getElementById('uploadMusicArtist');
+            
+            if (!fileInput.files[0] || !titleInput.value || !artistInput.value) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('title', titleInput.value);
+            formData.append('artist', artistInput.value);
+            
+            fetch('/api/upload/music', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+                    modal.hide();
+                    
+                    // Reload page to show new track
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Upload failed');
+            });
+        }
+        
+        // Expose functions for mini player
+        window.musicPlayerControls = {
+            togglePlayPause,
+            playPrevTrack,
+            playNextTrack,
+            isPlaying: () => isPlaying
+        };
+    });
+</script>
+{% endblock %}

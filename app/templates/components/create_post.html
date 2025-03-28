@@ -1,0 +1,147 @@
+<!-- Create Post Component -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="{{ current_user.username }}" class="avatar-small me-2">
+            <div class="post-prompt w-100" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                What's on your mind, {{ current_user.username }}?
+            </div>
+        </div>
+        <div class="d-flex justify-content-around">
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-image me-2"></i>Photo
+            </button>
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-video me-2"></i>Video
+            </button>
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-music me-2"></i>Audio
+            </button>
+            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-file me-2"></i>File
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('posts.create_post') }}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <!-- No CSRF token needed -->
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="{{ current_user.username }}" class="avatar-small me-2">
+                            <div>
+                                <strong>{{ current_user.username }}</strong>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="body" class="form-control" rows="4" placeholder="What's on your mind?" required></textarea>
+                            <!-- Add error handling for body field here -->
+                        </div>
+                        <div class="mb-3">
+                            <label for="media" class="form-label">Add to your post</label>
+                            <div class="input-group">
+                                <input type="file" name="media" class="form-control" id="media">
+                                <button class="btn btn-outline-secondary" type="button" id="clearMedia">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                Upload photos, videos, audio, or documents
+                            </div>
+                            <!-- Add error handling for media field here -->
+                        </div>
+                        <div id="mediaPreview" class="mt-2 d-none">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <img id="previewImg" src="#" alt="Media Preview" class="img-fluid rounded" style="max-height: 200px; display: none;">
+                                    <video id="previewVideo" controls class="img-fluid rounded" style="max-height: 200px; display: none;">
+                                        <source src="" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <audio id="previewAudio" controls class="w-100" style="display: none;">
+                                        <source src="" type="audio/mpeg">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                    <div id="previewFile" class="file-attachment" style="display: none;">
+                                        <i class="fas fa-file me-2"></i>
+                                        <span id="fileName">File</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mediaInput = document.getElementById('media');
+        const clearMediaBtn = document.getElementById('clearMedia');
+        const mediaPreview = document.getElementById('mediaPreview');
+        const previewImg = document.getElementById('previewImg');
+        const previewVideo = document.getElementById('previewVideo');
+        const previewAudio = document.getElementById('previewAudio');
+        const previewFile = document.getElementById('previewFile');
+        const fileName = document.getElementById('fileName');
+        
+        mediaInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                mediaPreview.classList.add('d-none');
+                return;
+            }
+            
+            // Reset all preview elements
+            previewImg.style.display = 'none';
+            previewVideo.style.display = 'none';
+            previewAudio.style.display = 'none';
+            previewFile.style.display = 'none';
+            
+            const fileType = file.type.split('/')[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                mediaPreview.classList.remove('d-none');
+                
+                if (fileType === 'image') {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                } else if (fileType === 'video') {
+                    previewVideo.querySelector('source').src = e.target.result;
+                    previewVideo.load();
+                    previewVideo.style.display = 'block';
+                } else if (fileType === 'audio') {
+                    previewAudio.querySelector('source').src = e.target.result;
+                    previewAudio.load();
+                    previewAudio.style.display = 'block';
+                } else {
+                    fileName.textContent = file.name;
+                    previewFile.style.display = 'block';
+                }
+            }
+            
+            reader.readAsDataURL(file);
+        });
+        
+        clearMediaBtn.addEventListener('click', function() {
+            mediaInput.value = '';
+            mediaPreview.classList.add('d-none');
+        });
+    });
+</script>

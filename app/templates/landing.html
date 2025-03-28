@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .hero-section {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        background-image: linear-gradient(135deg, rgba(33, 33, 33, 0.9) 0%, rgba(45, 52, 71, 0.9) 100%), url("{{ url_for('static', filename='img/synthwave-bg.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 100%);
+        z-index: 1;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 10px rgba(255, 0, 204, 0.5), 0 0 20px rgba(51, 51, 255, 0.3);
+    }
+    
+    .hero-subtitle {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        color: #fff;
+    }
+    
+    .feature-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: rgba(33, 33, 33, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 0, 204, 0.2);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(255, 0, 204, 0.3);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .cta-section {
+        background: linear-gradient(135deg, rgba(33, 33, 33, 0.9) 0%, rgba(45, 52, 71, 0.9) 100%);
+        padding: 5rem 0;
+        position: relative;
+    }
+    
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: linear-gradient(90deg, #3333ff 0%, #ff00cc 100%);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 0);
+        z-index: 1;
+    }
+    
+    .cta-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .btn-gradient {
+        background: linear-gradient(90deg, #ff00cc 0%, #3333ff 100%);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 12px 30px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(255, 0, 204, 0.4);
+    }
+    
+    .btn-gradient:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(255, 0, 204, 0.6);
+    }
+</style>
+{% endblock %}
+
+{% block content_full %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title">SynthWave Social</h1>
+                <p class="hero-subtitle">Connect with friends in a retro-futuristic world of neon lights and digital dreams.</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-gradient btn-lg">Join Now</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">Sign In</a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="{{ url_for('static', filename='img/hero-image.png') }}" alt="SynthWave Social" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-4 fw-bold">Features</h2>
+            <p class="lead">Everything you need in a modern social platform</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-user-friends feature-icon"></i>
+                        <h3 class="card-title">Connect</h3>
+                        <p class="card-text">Create your profile, connect with friends, and share your thoughts with the world.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-photo-video feature-icon"></i>
+                        <h3 class="card-title">Share</h3>
+                        <p class="card-text">Share photos, videos, and files with your friends and followers.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card feature-card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-music feature-icon"></i>
+                        <h3 class="card-title">Listen</h3>
+                        <p class="card-text">Bring your own music to enjoy the experience with our integrated player.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container cta-content text-center">
+        <h2 class="display-4 fw-bold text-white mb-4">Ready to join?</h2>
+        <p class="lead text-white mb-4">Create your account now and start connecting with friends in a whole new way.</p>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-gradient btn-lg">Get Started</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,136 @@
+<!-- Notifications Component -->
+<div class="notification-container" id="notificationContainer">
+    <div class="notification-wrapper">
+        <!-- Notifications will be dynamically inserted here -->
+    </div>
+</div>
+
+<style>
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 300px;
+    }
+    
+    .notification-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .notification {
+        background: rgba(30, 30, 40, 0.9);
+        border-left: 4px solid var(--primary);
+        border-radius: 5px;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transform: translateX(120%);
+        transition: transform 0.3s ease;
+        color: #fff;
+    }
+    
+    .notification.show {
+        transform: translateX(0);
+    }
+    
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .notification-close {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0;
+    }
+    
+    .notification-close:hover {
+        color: #fff;
+    }
+    
+    .notification-body {
+        font-size: 14px;
+    }
+    
+    .notification-info {
+        border-left-color: var(--info);
+    }
+    
+    .notification-success {
+        border-left-color: var(--success);
+    }
+    
+    .notification-warning {
+        border-left-color: var(--warning);
+    }
+    
+    .notification-danger {
+        border-left-color: var(--danger);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Notification system
+        window.showNotification = function(title, message, type = 'info', duration = 5000) {
+            const container = document.getElementById('notificationContainer');
+            const wrapper = container.querySelector('.notification-wrapper');
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            
+            // Create notification content
+            notification.innerHTML = `
+                <div class="notification-header">
+                    <h6 class="notification-title">${title}</h6>
+                    <button class="notification-close">&times;</button>
+                </div>
+                <div class="notification-body">
+                    ${message}
+                </div>
+            `;
+            
+            // Add to container
+            wrapper.appendChild(notification);
+            
+            // Show notification with animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Set up close button
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', function() {
+                removeNotification(notification);
+            });
+            
+            // Auto-remove after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    removeNotification(notification);
+                }, duration);
+            }
+            
+            // Function to remove notification with animation
+            function removeNotification(notif) {
+                notif.classList.remove('show');
+                setTimeout(() => {
+                    notif.remove();
+                }, 300);
+            }
+        };
+    });
+</script>

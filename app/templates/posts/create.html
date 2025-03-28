@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content_full %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Create Post</h4>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('posts.create_post') }}" method="post" enctype="multipart/form-data">
+                    <!-- No CSRF token needed -->
+                    <div class="mb-3">
+                        <label for="body" class="form-label">What's on your mind?</label>
+                        <textarea name="body" id="body" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="media" class="form-label">Add Media</label>
+                        <div class="input-group">
+                            <input type="file" name="media" id="media" class="form-control">
+                            <button class="btn btn-outline-secondary" type="button" id="clearMedia">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            Upload images, videos, audio files, or documents
+                        </div>
+                        <div id="mediaPreview" class="mt-2 d-none">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="previewContent"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mediaInput = document.getElementById('media');
+        const clearMediaBtn = document.getElementById('clearMedia');
+        const mediaPreview = document.getElementById('mediaPreview');
+        const previewContent = document.getElementById('previewContent');
+        
+        mediaInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (!file) {
+                mediaPreview.classList.add('d-none');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                mediaPreview.classList.remove('d-none');
+                
+                if (file.type.startsWith('image/')) {
+                    previewContent.innerHTML = `<img src="${e.target.result}" class="img-fluid" alt="Preview">`;
+                } else if (file.type.startsWith('video/')) {
+                    previewContent.innerHTML = `<video controls class="img-fluid"><source src="${e.target.result}" type="${file.type}"></video>`;
+                } else if (file.type.startsWith('audio/')) {
+                    previewContent.innerHTML = `<audio controls><source src="${e.target.result}" type="${file.type}"></audio>`;
+                } else {
+                    previewContent.innerHTML = `<div class="d-flex align-items-center">
+                        <i class="fas fa-file fa-2x me-2"></i>
+                        <span>${file.name}</span>
+                    </div>`;
+                }
+            };
+            
+            reader.readAsDataURL(file);
+        });
+        
+        clearMediaBtn.addEventListener('click', function() {
+            mediaInput.value = '';
+            mediaPreview.classList.add('d-none');
+            previewContent.innerHTML = '';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+<!-- Mini Music Player Component -->
+<div id="miniPlayer" class="mini-player">
+    <div class="mini-player-info">
+        <img id="miniPlayerArt" src="{{ url_for('static', filename='img/default_album.png') }}" alt="Album Art">
+        <div class="mini-player-text">
+            <div id="miniPlayerTitle">No track playing</div>
+            <div id="miniPlayerArtist">-</div>
+        </div>
+    </div>
+    <div class="mini-player-controls">
+        <button id="miniPlayerPrev" class="mini-player-btn">
+            <i class="fas fa-step-backward"></i>
+        </button>
+        <button id="miniPlayerPlay" class="mini-player-btn">
+            <i class="fas fa-play"></i>
+        </button>
+        <button id="miniPlayerNext" class="mini-player-btn">
+            <i class="fas fa-step-forward"></i>
+        </button>
+    </div>
+</div>
